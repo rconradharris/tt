@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+import tt
+
+TESTDIR = "/tmp/ttfunctest"
+tt.TaskManager.TT_DIR = TESTDIR
+manager = tt.TaskManager()
+
+for status in ('pending', 'started', 'stopped'):
+    task_ids = manager.get_task_ids_by_status(status)
+    for task_id in task_ids:
+        print task_id

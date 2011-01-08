@@ -17,9 +17,9 @@ def status(manager):
         for task in tasks:
             if status == "done":
                 pretty_duration = task.get_pretty_total_duration()
-                print "%s: '%s' (%s)" % (task.task_id, task.name, pretty_duration)
+                print "%s (%s)" % (task.name, pretty_duration)
             else:
-                print "%s: '%s'" % (task.task_id, task.name)
+                print task.name
         print
 
 def start(manager, task_id):

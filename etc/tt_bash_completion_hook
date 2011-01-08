@@ -1,0 +1,16 @@
+#!/bin/bash
+_tt() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    local task_ids="`./bin/tt_completer`"
+    #opts="--help --verbose --version"
+
+    COMPREPLY=( $(compgen -W "${task_ids}" -- ${cur}) )
+    return 0
+}
+complete -F _tt tt
+
