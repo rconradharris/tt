@@ -1,0 +1,91 @@
+Design Notes
+============
+
+The design is modeled on git, a database within the filesystem.
+
+state/current is analogous to HEAD
+
+tasks is analogous to the obj/ directory
+
+The ID of a task is the date plus the slugified form of the name's first 16
+characters. Example:
+
+  design_session-2011_1_08
+
+We use name then date so that autocompleting the ID makes more sense.
+
+
+Filesystem layout
+=================
+
+.tt/
+  ttconfig
+    time_increment_minutes=15
+  state/
+    priority/
+      top/
+        design_session_2011_1_08
+      high/
+      low/
+    status/
+      pending/
+        design_session_2011_1_08
+      current/
+          design_session_2011_1_08
+      stopped/
+      done/
+      closed/
+      deleted/
+  tasks/
+    2011/
+      01/
+        08/
+          design_session
+            Design Session
+            pending <timestamp>
+            started <timestamp>
+            stopped <timestamp>
+            done <timestamp>
+            closed <timestamp>
+
+
+Models
+======
+
+Task
+  Attributes:
+    id
+    name
+    status
+    priority
+    timelog
+  
+  Mutators:
+    add(pending_time=now)
+    start(start_time=now)
+    stop(stop_time=now)
+    done(done_time=now)
+    close(close_time=now)
+
+TaskManager
+  Attributes:
+    current
+    priority = {"top": [], "high": [], "low": []}
+    status = {"pending": [], "started": [], "stopped": [],
+              "done": [], "closed": [], "deleted": []}
+  Mutators: 
+    task_id = add_task(task, status=pending)
+    start_task(task_id)
+    stop_current() 
+    close_task(task_id)
+    delete_task(task_id)
+
+  Accessors:
+    task_id = get_current()
+    task = get_task_by_id(task_id)
+    tasks = get_tasks_by_priority(priority)
+    tasks = get_tasks_by_status(status)
+
+Components
+==========
+
