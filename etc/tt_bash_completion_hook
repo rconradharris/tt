@@ -6,11 +6,32 @@ _tt()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    local task_ids="`./bin/tt_completer`"
-    #opts="--help --verbose --version"
+    if [[ ${cur} == ?* ]] ; then
+        case "${prev}" in
+            start)
+                local stopped_task_ids="`./bin/tt_completer task_ids pending stopped`"
+                COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
+                return 0
+                ;;
+            stop)
+                local started_task_ids="`./bin/tt_completer task_ids started`"
+                COMPREPLY=( $(compgen -W "${started_task_ids}" -- ${cur}) )
+                return 0
+                ;;
+            done)
+                local stopped_task_ids="`./bin/tt_completer task_ids stopped`"
+                COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
+                return 0
+                ;;
+            *)
+            ;;
+        esac
+    fi
 
-    COMPREPLY=( $(compgen -W "${task_ids}" -- ${cur}) )
-    return 0
+    if [[ ${cur} == ?* ]] ; then
+        local actions="`./bin/tt_completer actions`"
+        COMPREPLY=( $(compgen -W "${actions}" -- ${cur}) )
+    fi
 }
 complete -F _tt tt
 
