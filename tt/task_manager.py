@@ -1,7 +1,8 @@
+import errno
 import os
 
+from tt import exceptions
 from tt.task import Task
-
 
 class TaskManager(object):
     TT_DIR = "/tmp/ttdata"
@@ -24,12 +25,21 @@ class TaskManager(object):
     def stop_task(self, task):
         task.stop()
 
+    def delete_task(self, task):
+        task.delete()
+
     def done_task(self, task):
         """Finish a task, if it's in progress, stop it, then finish it """
         if task.status == "started":
             task.stop()
 
         task.done()
+
+    def close_done_tasks(self):
+        """Close all done tasks"""
+        tasks = self.get_tasks_by_status("done")
+        for task in tasks:
+            task.close()
 
     def initialize_state(self):
         """Creates a brand new instance of tt"""
@@ -47,7 +57,14 @@ class TaskManager(object):
 
     def get_task_ids_by_status(self, status):
         status_dir = self._get_status_dir(status)
-        task_ids = os.listdir(status_dir)
+        try:
+            task_ids = os.listdir(status_dir)
+        except OSError, e:
+            if e.errno == errno.ENOENT:
+                raise exceptions.DirectoryNotFound(
+                    "'%s' not found" % status_dir)
+            else:
+                raise
         return task_ids
 
     def get_tasks_by_status(self, status):
@@ -72,15 +89,13 @@ class TaskManager(object):
             started/
             stopped/
             done/
-            closed/
-            deleted/
     tasks/
         """
         tt_dir = self._get_tt_dir()
 
         os.makedirs(tt_dir)
 
-        for status in Task.STATUSES:
+        for status in Task.DIRECTORY_STATUSES:
             status_dir = self._get_status_dir(status)
             os.makedirs(status_dir)
 

@@ -8,3 +8,7 @@ class StatusChangeException(TTException):
 
 class BadTaskId(TTException):
     pass
+
+
+class DirectoryNotFound(TTException):
+    pass

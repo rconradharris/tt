@@ -1,3 +1,4 @@
+import errno
 import os
 
 from tt import exceptions
@@ -5,7 +6,10 @@ from tt import utils
 
 
 class Task(object):
-    STATUSES = ["pending", "started", "stopped", "done", "closed", "deleted"]
+
+    DIRECTORY_STATUSES = ("pending", "started", "stopped", "done")
+    UNLINKED_STATUSES = ("closed", "deleted")
+    STATUSES = DIRECTORY_STATUSES + UNLINKED_STATUSES
     
     def __init__(self, manager, task_id, name, status):
         self.manager = manager
@@ -51,13 +55,13 @@ class Task(object):
         try:
             slug, date_str = task_id.split("-")
             year, month, day = date_str.split("_")
+            return (slug, year, month, day)
         except ValueError:
             raise exceptions.BadTaskId("'%s' is not a valid task_id" % task_id)
-        return (slug, year, month, day)
 
     @classmethod
     def _slugify(cls, name, max_len=16):
-        INVALID_CHARS = ["/", ":", "-"]
+        INVALID_CHARS = ["/", ":", "-", '"', "'"]
         slug = name.replace(" ", "_")
 
         for char in INVALID_CHARS:
@@ -104,8 +108,16 @@ class Task(object):
     def _initialize_task_status(self):
         """Add this task to the state/status/ table"""
         task_file = self._get_task_status_file()
-        with open(task_file, "w") as f:
-            f.write("")  # The files presence is all that matters
+        try:
+            with open(task_file, "w") as f:
+                f.write("")  # The files presence is all that matters
+        except IOError, e:
+            if e.errno == errno.ENOENT:
+                task_path = os.path.dirname(task_file)
+                raise exceptions.DirectoryNotFound(
+                    "'%s' not found" % task_path)
+            else:
+                raise
 
         self._append_status_timestamp()
 
@@ -114,7 +126,7 @@ class Task(object):
         task_file = os.path.join(status_dir, self.task_id)
         return task_file
 
-    def _update_status(self, status):
+    def _move_status_link(self, status):
         """Update state/status table and write timelog"""
         if status == self.status:
             raise exceptions.StatusChangeException(
@@ -126,35 +138,46 @@ class Task(object):
         os.rename(old_task_file, new_task_file)
         self._append_status_timestamp()
 
+    def _remove_status_link(self):
+        task_status_file = self._get_task_status_file()
+        os.unlink(task_status_file)
+
+    def _remove_task_file(self):
+        task_file = self._get_task_file()
+        os.unlink(task_file)
+
     def start(self):
         if self.status not in ("pending", "stopped"):
             raise exceptions.StatusChangeException("Task must be pending or stopped")
 
-        self._update_status("started")
+        self._move_status_link("started")
 
     def stop(self):
         if self.status != "started":
             raise exceptions.StatusChangeException("Task must be started")
 
-        self._update_status("stopped")
+        self._move_status_link("stopped")
     
     def done(self):
         if self.status != "stopped":
             raise exceptions.StatusChangeException("Task must be stopped")
 
-        self._update_status("done")
+        self._move_status_link("done")
 
     def close(self):
         if self.status != "done":
             raise exceptions.StatusChangeException("Task must be done")
 
-        self._update_status("closed")
+        self._remove_status_link()
+        self.status = "closed"
+        self._append_status_timestamp()
 
     def delete(self):
         if self.status == "closed":
             raise exceptions.StatusChangeException("Task cannot be closed")
 
-        self._update_status("deleted")
+        self._remove_status_link()
+        self._remove_task_file()
 
     def _parse_timelog(self):
         """Return timelog as list of (status, datetime) tuples"""

@@ -1,19 +1,26 @@
 #!/usr/bin/env python
 import sys
-import tt
 
+from tt import exceptions
+from tt import task_manager
 
 
 def init(manager):
     manager.initialize_state()
 
-def add(manager, name):
-    manager.add_task(name)
 
-def status(manager):
+def add(manager, name_parts):
+    name = ' '.join(name_parts)
+    try:
+        manager.add_task(name)
+    except exceptions.DirectoryNotFound, e:
+        die(e)
+
+
+def info(manager):
     for status in ('started', 'stopped', 'pending', 'done'):
+        tasks = safe_get_tasks_by_status(manager, status)
         print status.upper()
-        tasks = manager.get_tasks_by_status(status)
         for task in tasks:
             if status == "done":
                 pretty_duration = task.get_pretty_total_duration()
@@ -22,21 +29,58 @@ def status(manager):
                 print task.name
         print
 
-def start(manager, task_id):
-    task = manager.get_task(task_id)
+
+def begin(manager, task_id):
+    """Starts a task
+
+    Called 'begin' to facilitate autocompletion since STop is already taken.
+    """
+    task = safe_get_task(manager, task_id)
     manager.start_task(task)
 
+
 def stop(manager, task_id):
-    task = manager.get_task(task_id)
+    task = safe_get_task(manager, task_id)
     manager.stop_task(task)
 
+
 def done(manager, task_id):
-    task = manager.get_task(task_id)
+    task = safe_get_task(manager, task_id)
     manager.done_task(task)
+
+
+def close(manager):
+    manager.close_done_tasks()
+
+
+def delete(manager, task_id):
+    task = safe_get_task(manager, task_id)
+    manager.delete_task(task)
+
+
+def safe_get_task(manager, task_id):
+    try:
+        task = manager.get_task(task_id)
+        return task
+    except exceptions.BadTaskId, e:
+        die(e)
+
+
+def safe_get_tasks_by_status(manager, status):
+    try:
+        tasks = manager.get_tasks_by_status(status)
+        return tasks
+    except exceptions.DirectoryNotFound, e:
+        die(e)
+
+
+def die(msg):
+    print >>sys.stderr, "ERROR: %s" % msg
+    sys.exit(1)
 
 def usage():
     cmd = "tt"
-    print "%s <init|add|status>" % cmd
+    print "%s <init|add|begin|close|done|stop|info>" % cmd
 
 def main():
     if len(sys.argv) < 2:
@@ -44,26 +88,31 @@ def main():
         sys.exit(1)
 
     TESTDIR = "/tmp/ttfunctest"
-    tt.TaskManager.TT_DIR = TESTDIR
-    manager = tt.TaskManager()
+    task_manager.TaskManager.TT_DIR = TESTDIR
+    manager = task_manager.TaskManager()
 
     action = sys.argv[1]
     if action == "init":
         init(manager)
     elif action == "add":
-        name = sys.argv[2]
-        add(manager, name)
-    elif action == "status":
-        status(manager)
-    elif action == "start":
+        name_parts = sys.argv[2:]
+        add(manager, name_parts)
+    elif action == "info":
+        info(manager)
+    elif action == "begin":
         task_id = sys.argv[2]
-        start(manager, task_id)
+        begin(manager, task_id)
     elif action == "stop":
         task_id = sys.argv[2]
         stop(manager, task_id)
     elif action == "done":
         task_id = sys.argv[2]
         done(manager, task_id)
+    elif action == "close":
+        close(manager)
+    elif action == "delete":
+        task_id = sys.argv[2]
+        delete(manager)
 
 if __name__ == "__main__":
     main()

@@ -1,25 +1,25 @@
 #!/bin/bash
 _tt() 
 {
-    local cur prev opts
+    local cur prev tt_completer
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-
+    tt_completer="_tt_completer"
     if [[ ${cur} == ?* ]] ; then
         case "${prev}" in
-            start)
-                local stopped_task_ids="`./bin/tt_completer task_ids pending stopped`"
+            begin)
+                local stopped_task_ids="`${tt_completer} task_ids pending stopped`"
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
                 return 0
                 ;;
             stop)
-                local started_task_ids="`./bin/tt_completer task_ids started`"
+                local started_task_ids="`${tt_completer} task_ids started`"
                 COMPREPLY=( $(compgen -W "${started_task_ids}" -- ${cur}) )
                 return 0
                 ;;
             done)
-                local stopped_task_ids="`./bin/tt_completer task_ids stopped`"
+                local stopped_task_ids="`${tt_completer} task_ids started stopped`"
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
                 return 0
                 ;;
@@ -29,7 +29,7 @@ _tt()
     fi
 
     if [[ ${cur} == ?* ]] ; then
-        local actions="`./bin/tt_completer actions`"
+        local actions="`${tt_completer} actions`"
         COMPREPLY=( $(compgen -W "${actions}" -- ${cur}) )
     fi
 }
