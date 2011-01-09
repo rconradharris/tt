@@ -192,7 +192,7 @@ class Task(object):
                 status_dts.append((status, dt))
         return status_dts
 
-    def get_total_duration(self):
+    def get_duration(self):
         """Return the task duration in seconds.
 
         Duration is defined as the SUM((stop_time - start_time))
@@ -212,10 +212,3 @@ class Task(object):
                 total_secs += delta_secs 
         
         return total_secs
-
-    def get_pretty_total_duration(self):
-        """Return a human readable form of total duration"""
-        total_secs = self.get_total_duration()
-        #TODO: write code to go from secs -> min -> hours -> days -> weeks 
-        # -> months -> years
-        return "%s seconds" % total_secs

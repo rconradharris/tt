@@ -17,18 +17,46 @@ def add(manager, name_parts):
         die(e)
 
 
-def info(manager):
-    for status in ('started', 'stopped', 'pending', 'done'):
-        tasks = safe_get_tasks_by_status(manager, status)
-        print status.upper()
-        for task in tasks:
-            if status == "done":
-                pretty_duration = task.get_pretty_total_duration()
-                print "%s (%s)" % (task.name, pretty_duration)
-            else:
-                print task.name
-        print
+def get_pretty_duration(duration):
+    """Return a human readable form of total duration"""
+    #TODO: write code to go from secs -> min -> hours -> days -> weeks
+    # -> months -> years
+    return "%s seconds" % duration
 
+def print_simple_status(manager, status):
+    tasks = safe_get_tasks_by_status(manager, status)
+    print status.upper()
+    for task in tasks:
+        print " - %s" % task.name
+
+def print_timed_status(manager, status):
+    total_duration = 0
+    tasks = safe_get_tasks_by_status(manager, status)
+    print status.upper()
+    for task in tasks:
+        duration = task.get_duration()
+        total_duration += duration
+        pretty_duration = get_pretty_duration(duration)
+        print " - %s (%s)" % (task.name, pretty_duration)
+
+    return total_duration
+
+def info(manager):
+    total_duration = 0
+
+    print_simple_status(manager, "started")
+    print
+
+    total_duration = print_timed_status(manager, "stopped")
+    print
+
+    print_simple_status(manager, "pending")
+    print
+
+    total_duration += print_timed_status(manager, "done")
+    print
+
+    print "Total Duration: %s" % get_pretty_duration(total_duration)
 
 def begin(manager, task_id):
     """Starts a task
