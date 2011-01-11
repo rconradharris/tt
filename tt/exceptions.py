@@ -12,3 +12,8 @@ class BadTaskId(TTException):
 
 class DirectoryNotFound(TTException):
     pass
+
+
+class TaskAlreadyExists(TTException):
+    pass
+

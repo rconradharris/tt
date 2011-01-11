@@ -1,0 +1,24 @@
+* Add report() which shows time-spent on tasks on a given day
+
+* Improve bash completion, use bash_completion.d where available, otherwise
+  fall back to manual addition
+
+* Add hooks for each status change
+
+* With hooks, add git integration
+    Push on close?
+    Commit on status change?
+    git-init on tt init?
+
+* Flag tasks > 8 hours and cross midnight as "suspicious", allow user to "verify"
+
+* Delete closed tasks older than a given date
+
+* Add colorization
+
+* Add man page
+
+* Move _tt_completer into tt itself
+
+* Add command to rebuild `tasks/state/status` directory (helpful if you hand
+  edit files)

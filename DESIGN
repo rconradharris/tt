@@ -1,41 +1,57 @@
+============
 Design Notes
 ============
 
 The design is modeled on git, a database within the filesystem.
 
-state/current is analogous to HEAD
+Task IDs
+========
 
-tasks is analogous to the obj/ directory
+Whereas `git` uses SHA1s for object IDs, `tt` uses a more human-friendly
+system: the task name (slugified and truncated) and the task creation date.
 
-The ID of a task is the date plus the slugified form of the name's first 16
-characters. Example:
+Since `tt` provides tab-completion on task_ids, you rarely have to type out
+the entire ID. Rather, you type in the first two-letters of the task name
+(lowercased) then press TAB, the rest of the id should fill in automatically.
 
-  design_session-2011_1_08
+Task File
+=========
 
-We use name then date so that autocompleting the ID makes more sense.
+Each task in the system is represented by a single file. The first line is the
+pretty description. The remaining lines are the timestamps of the status
+changes. These are used by the reporting system to tabulate task duration.
+
+Since this is just a plain text file, you are free to edit this as needed. The
+only caveat is: ensure the state changes make-sense (e.g. don't start a closed
+task, etc.)
+
+Task Status
+===========
+
+A task is given a particular status by placing a pointer-file in the
+`state/status` directory. The pointer-file is empty, its name, which is the
+task_id, is the only part that is needed.
+
+This could be a symlink (?).
+
+Task Manager
+============
+
+This is the component that manages multiple tasks, like fetching tasks with a
+given status, or tasks that were started on a particular date.
 
 
-Filesystem layout
+Filesystem Layout
 =================
 
 .tt/
-  ttconfig
-    time_increment_minutes=15
   state/
-    priority/
-      top/
-        design_session_2011_1_08
-      high/
-      low/
     status/
       pending/
         design_session_2011_1_08
-      current/
-          design_session_2011_1_08
+      started/
       stopped/
       done/
-      closed/
-      deleted/
   tasks/
     2011/
       01/
@@ -47,45 +63,3 @@ Filesystem layout
             stopped <timestamp>
             done <timestamp>
             closed <timestamp>
-
-
-Models
-======
-
-Task
-  Attributes:
-    id
-    name
-    status
-    priority
-    timelog
-  
-  Mutators:
-    add(pending_time=now)
-    start(start_time=now)
-    stop(stop_time=now)
-    done(done_time=now)
-    close(close_time=now)
-
-TaskManager
-  Attributes:
-    current
-    priority = {"top": [], "high": [], "low": []}
-    status = {"pending": [], "started": [], "stopped": [],
-              "done": [], "closed": [], "deleted": []}
-  Mutators: 
-    task_id = add_task(task, status=pending)
-    start_task(task_id)
-    stop_current() 
-    close_task(task_id)
-    delete_task(task_id)
-
-  Accessors:
-    task_id = get_current()
-    task = get_task_by_id(task_id)
-    tasks = get_tasks_by_priority(priority)
-    tasks = get_tasks_by_status(status)
-
-Components
-==========
-

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+import datetime
+import os
 import sys
 
 from tt import exceptions
+from tt import task
 from tt import task_manager
-
 
 def init(manager):
     manager.initialize_state()
@@ -13,7 +15,7 @@ def add(manager, name_parts):
     name = ' '.join(name_parts)
     try:
         manager.add_task(name)
-    except exceptions.DirectoryNotFound, e:
+    except exceptions.TTException, e:
         die(e)
 
 
@@ -23,46 +25,48 @@ def get_pretty_duration(duration):
     # -> months -> years
     return "%s seconds" % duration
 
+
 def print_simple_status(manager, status):
     tasks = safe_get_tasks_by_status(manager, status)
     print status.upper()
     for task in tasks:
         print " - %s" % task.name
 
-def print_timed_status(manager, status):
+
+def print_timed_status(manager, status, duration_fn):
     total_duration = 0
     tasks = safe_get_tasks_by_status(manager, status)
     print status.upper()
     for task in tasks:
-        duration = task.get_duration()
+        duration = duration_fn(task)
         total_duration += duration
         pretty_duration = get_pretty_duration(duration)
         print " - %s (%s)" % (task.name, pretty_duration)
 
     return total_duration
 
+
 def info(manager):
+    duration_fn = task.Task.get_duration
     total_duration = 0
 
     print_simple_status(manager, "started")
     print
 
-    total_duration = print_timed_status(manager, "stopped")
+    total_duration = print_timed_status(manager, "stopped", duration_fn)
     print
 
     print_simple_status(manager, "pending")
     print
 
-    total_duration += print_timed_status(manager, "done")
+    total_duration += print_timed_status(manager, "done", duration_fn)
     print
 
     print "Total Duration: %s" % get_pretty_duration(total_duration)
 
-def begin(manager, task_id):
-    """Starts a task
 
-    Called 'begin' to facilitate autocompletion since STop is already taken.
-    """
+def start(manager, task_id):
+    """Starts a task """
     task = safe_get_task(manager, task_id)
     manager.start_task(task)
 
@@ -86,6 +90,23 @@ def delete(manager, task_id):
     manager.delete_task(task)
 
 
+def report(manager):
+    total_duration = 0
+    date = datetime.date(2011, 1, 9)
+    duration_fn = lambda t: task.Task.get_duration_for_date(t, date)
+    status = "started"
+    tasks = manager.get_tasks_with_status_on_date(status, date)
+    for task in tasks:
+        total_duration += print_timed_status(manager, task.status, duration_fn)
+        print task
+
+
+def edit(manager, task_id):
+    task = safe_get_task(manager, task_id)
+    task_file = manager.get_task_file(task)
+    os.system('vim %s' % task_file)
+
+
 def safe_get_task(manager, task_id):
     try:
         task = manager.get_task(task_id)
@@ -106,17 +127,20 @@ def die(msg):
     print >>sys.stderr, "ERROR: %s" % msg
     sys.exit(1)
 
+
 def usage():
     cmd = "tt"
-    print "%s <init|add|begin|close|done|stop|info>" % cmd
+    print "%s <init|add|start|close|done|edit|stop|info>" % cmd
+
 
 def main():
     if len(sys.argv) < 2:
         usage()
         sys.exit(1)
 
-    TESTDIR = "/tmp/ttfunctest"
-    task_manager.TaskManager.TT_DIR = TESTDIR
+    #TODO: make this configurable
+    TT_DIR = "~/.tt"
+    task_manager.TaskManager.TT_DIR = TT_DIR
     manager = task_manager.TaskManager()
 
     action = sys.argv[1]
@@ -127,9 +151,9 @@ def main():
         add(manager, name_parts)
     elif action == "info":
         info(manager)
-    elif action == "begin":
+    elif action == "start":
         task_id = sys.argv[2]
-        begin(manager, task_id)
+        start(manager, task_id)
     elif action == "stop":
         task_id = sys.argv[2]
         stop(manager, task_id)
@@ -141,6 +165,13 @@ def main():
     elif action == "delete":
         task_id = sys.argv[2]
         delete(manager)
+    elif action == "report":
+        report(manager)
+    elif action == "edit":
+        task_id = sys.argv[2]
+        edit(manager, task_id)
+    else:
+        die("Unrecognized command '%s'" % action)
 
 if __name__ == "__main__":
     main()

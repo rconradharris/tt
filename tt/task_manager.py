@@ -8,6 +8,11 @@ class TaskManager(object):
     TT_DIR = "/tmp/ttdata"
 
 
+    def get_task_file(self, task):
+        """Returns task file for given task"""
+        task_file = task.get_task_file()
+        return task_file
+
     def add_task(self, name):
         """This adds a task and adjusts the TaskManager state accordingly"""
         task = Task.create(manager=self, name=name, status="pending")
@@ -68,16 +73,37 @@ class TaskManager(object):
         return task_ids
 
     def get_tasks_by_status(self, status):
-        tasks = []
         task_ids = self.get_task_ids_by_status(status)
         for task_id in task_ids:
             task = self.get_task(task_id)
-            tasks.append(task)
-        return tasks
+            yield task
 
     def get_task(self, task_id):
         task = Task.load(self, task_id)
         return task
+
+    def get_all_tasks(self):
+        """Yields every task in the system"""
+        tasks_dir = self._get_tasks_dir()
+        for root, dirs, files in os.walk(tasks_dir):
+            for file in files:
+                task_file = os.path.join(root, file)
+                task = Task.load_from_file(self, task_file)
+                yield task
+
+    def get_tasks_with_status_on_date(self, status, date):
+        """Return tasks that have a timelog entry of the given status on the
+        given date. `date` should be a datetime or datetime.date obj
+
+        Since this scans all tasks, this is very expensive.
+        """
+        date_match = lambda dt: ((dt.year == date.year) and (dt.month == date.month) and
+                                 (dt.day == date.day))
+        tasks = self.get_all_tasks()
+        for task in tasks:
+            for log_status, dt in task.log:
+                if log_status == status and date_match(dt):
+                    yield task
 
     def _create_tt_dir(self):
         """

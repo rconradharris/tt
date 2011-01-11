@@ -4,6 +4,10 @@ import os
 
 
 def timedelta_total_seconds(td):
+    """Return number of seconds within a timedelta object
+
+    Code taken from Python docs. This is native in 2.7 and later
+    """
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
 
 
@@ -12,17 +16,18 @@ def get_now():
     return now
 
 
-def get_date_str(fmt=None):
+def format_datetime_str(dt, fmt=None):
+    if fmt is None:
+        fmt = "%Y-%m-%d %H:%M:%S"
+    datetime_str = dt.strftime(fmt)
+    return datetime_str
+
+
+def format_date_str(dt, fmt=None):
     if fmt is None:
         fmt = "%Y-%m-%d"
-    now = get_now()
-    date_str = now.strftime(fmt)
-    return date_str
-
-
-def get_datetime_str():
-    fmt = "%Y-%m-%d %H:%M:%S"
-    return get_date_str(fmt=fmt)
+    datetime_str = dt.strftime(fmt)
+    return datetime_str
 
 
 def get_datetime_from_str(datetime_str):
@@ -37,4 +42,3 @@ def mkdirs_easy(dir):
     except OSError, e:
         if e.errno != errno.EEXIST:
             raise
-

@@ -3,7 +3,7 @@ import sys
 
 from tt import task_manager
 
-TESTDIR = "/tmp/ttfunctest"
+TESTDIR = "~/.tt"
 task_manager.TaskManager.TT_DIR = TESTDIR
 manager = task_manager.TaskManager()
 
@@ -20,7 +20,7 @@ if action == "task_ids":
         for task_id in task_ids:
             print task_id
 elif action == "actions":
-    actions = ('add', 'begin', 'stop', 'done', 'info')
+    actions = ('add', 'start', 'close', 'edit', 'delete', 'stop', 'done', 'info')
     for action in actions:
         print action
 
