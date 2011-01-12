@@ -27,6 +27,11 @@ def get_datetime_from_str(datetime_str):
     return datetime.datetime.strptime(datetime_str, fmt)
 
 
+def get_date_from_str(date_str):
+    fmt = "%Y-%m-%d"
+    return datetime.datetime.strptime(date_str, fmt).date()
+
+
 def date_match(date1, date2):
     """Determine if two datetime/date objs share the same date"""
     return ((date1.day == date2.day) and (date1.month == date2.month) and

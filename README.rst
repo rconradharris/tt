@@ -44,17 +44,17 @@ Add a task::
 Show current status::
 
     $ tt info
-        STARTED
+    STARTED
 
-        STOPPED
+    STOPPED
 
-        PENDING
+    PENDING
 
-         - Create README file
+     - Create README file
 
-        DONE
+    DONE
 
-        Total Duration: 0 seconds
+    Total Duration: 00:00:00
 
 Start a task::
 
@@ -69,39 +69,49 @@ Finish a task::
     $ tt done cr[TAB-complete]eate_readme_fi-2011_01_09
 
     $ tt info
-        STARTED
+    STARTED
 
-        STOPPED
+    STOPPED
 
-        PENDING
+    PENDING
 
-        DONE
+    DONE
 
-         - Create README file (13 seconds)
+     - Create README file (00:00:13)
 
-        Total Duration: 13 seconds
+    Total Duration: 00:00:13
 
 Close finished tasks::
 
     $ tt close
 
     $ tt info
-        STARTED
+    STARTED
 
-        STOPPED
+    STOPPED
 
-        PENDING
+    PENDING
 
-        DONE
+    DONE
 
-        Total Duration: 0 seconds
+    Total Duration: 00:00:00
 
 Report for today::
 
     $ tt report today
     2011-01-11
-
      - Create the Report Component (01:30:00)
      - Add some Tests for Duration (00:45:00)
 
-     Total Duration: 02:15:00
+    Total Duration: 02:15:00
+
+Report for week::
+
+    $ tt report week
+    2011-01-11: 02:15:00
+    2011-01-10: 00:45:00
+    2011-01-09: 00:00:00
+    2011-01-08: 00:00:00
+    2011-01-07: 00:00:00
+    2011-01-06: 00:00:00
+    2011-01-05: 00:00:00

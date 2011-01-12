@@ -1,7 +1,5 @@
 * tt info --today (just show stuff for today)
 
-* Add weekly report
-
 * Improve bash completion, use bash_completion.d where available, otherwise
   fall back to manual addition
 
@@ -27,3 +25,5 @@
   edit files)
 
 * Run Pep-8 on code, add pep8 git hook
+
+* Add tab completion for reports

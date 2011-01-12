@@ -109,14 +109,44 @@ def delete(manager, task_id):
 
 
 def report(manager, date_str):
-    if date_str == "today":
+    if date_str == "week":
+        weekly_report(manager)
+    elif date_str == "today":
         date = utils.get_now().date()
+        daily_report(manager, date)
     elif date_str == "yesterday":
         date = utils.get_now().date()
         date = date - datetime.timedelta(days=1)
+        daily_report(manager, date)
+    else:
+        date = utils.get_date_from_str(date_str)
+        daily_report(manager, date)
 
+
+def weekly_report(manager, days_back=7):
+    now = utils.get_now()
+    dates = []
+    for day_back in range(days_back):
+        dt = now - datetime.timedelta(days=day_back)
+        date = dt.date()
+        dates.append(date)
+
+    for date in dates:
+        status = "started"
+        tasks = manager.get_tasks_with_status_on_date(status, date)
+
+        durations = []
+        for task in tasks:
+            duration = task.get_duration_for_date(date)
+            durations.append(duration)
+
+        duration_for_date = sum(durations, datetime.timedelta())
+        pretty_duration_for_date = get_pretty_duration(duration_for_date)
+        print "%s: %s" % (date, pretty_duration_for_date)
+
+
+def daily_report(manager, date):
     print date
-    print
     durations = []
     status = "started"
     tasks = manager.get_tasks_with_status_on_date(status, date)
