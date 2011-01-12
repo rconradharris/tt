@@ -1,3 +1,4 @@
+import datetime
 import errno
 import os
 
@@ -230,23 +231,66 @@ class Task(object):
         self._remove_task_file()
 
     def get_duration(self):
-        """Return the task duration in seconds.
-
-        Duration is defined as the SUM((stop_time - start_time))
         """
-        #TODO: this will need unit tests
-        total_secs = 0
+        For an unbounded interval, the duration is "running", so the imposed
+        boundary is now.
+        """
+        boundary = utils.get_now()
+        return self._get_duration(self.log, boundary)
+
+    def _get_duration(self, entries, boundary):
+        """Return the task duration as a `datetime.timedelta` object.
+
+        The duration of a task is defined as the sum of its started-stopped
+        intervals.
+
+        Intervals fall into 3 categories:
+
+        1. A 'bounded interval' is where a 'started' status has a matching
+           'stopped' status. The duration of the interval is
+           (stop_time - start_time).
+
+        2. An 'unbounded interval' is where the 'started' status is the last
+           entry in the log. In this case, the duration of the interval is
+           (now - start_time).
+
+        3. An 'invalid interval' is one where the 'started' status does not
+           have a matching 'stopped' status *and* 'started' is not the last
+           entry. This is a state violation and raises a
+           StatusChangeException.
+        """
+        intervals = []
         started = None
-        for status, dt in self.log:
-            if status == "started":
+        for status, dt in entries:
+            if status == "started" and not started:
                 started = dt
-            elif status == "stopped":
+            elif started and status == "stopped":
+                # 1. bounded interval
                 stopped = dt
                 timedelta = stopped - started
-                delta_secs = utils.timedelta_total_seconds(timedelta)
-                total_secs += delta_secs 
-        
-        return total_secs
+                # NOTE: oddly timedelta doesn't support the += operator in
+                # (2.6)
+                intervals.append(timedelta)
+                started = None
+            elif started:
+                # 3. invalid interval
+                raise exceptions.StatusChangeException(
+                    "'started' entry must have matching 'stopped' entry or be "
+                    "the last entry in the log")
+
+        if started:
+            # 2. unbounded interval
+            timedelta = boundary - started
+            intervals.append(timedelta)
+
+        total = sum(intervals, datetime.timedelta())
+        return total
+
+    def get_log_entries_for_date(self, date):
+        for entry in self.log:
+            status, dt = entry
+            if utils.date_match(date, dt):
+                yield entry
 
     def get_duration_for_date(self, date):
         """Return the task duration in seconds for a given date.
@@ -255,4 +299,9 @@ class Task(object):
         midnight on the given date. The rest of the duration will be tabulated
         in the following date.
         """
-        #TODO this will need unit-tests
+        dt = utils.date2datetime(date)
+        boundary = dt + datetime.timedelta(days=1)
+        entries = self.get_log_entries_for_date(date)
+        duration = self._get_duration(entries, boundary)
+        return duration
+

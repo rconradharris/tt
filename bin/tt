@@ -6,6 +6,8 @@ import sys
 from tt import exceptions
 from tt import task
 from tt import task_manager
+from tt import utils
+
 
 def init(manager):
     manager.initialize_state()
@@ -23,7 +25,17 @@ def get_pretty_duration(duration):
     """Return a human readable form of total duration"""
     #TODO: write code to go from secs -> min -> hours -> days -> weeks
     # -> months -> years
-    return "%s seconds" % duration
+    # NOTE: For now, assume < 1 day
+    assert duration.days == 0
+    seconds = float(duration.seconds)
+    minutes = seconds / 60
+    seconds %= 60
+
+    hours = minutes / 60
+    minutes %= 60
+
+    duration_str = "%02d:%02d:%02d" % (hours, minutes, seconds)
+    return duration_str
 
 
 def print_simple_status(manager, status):
@@ -34,34 +46,40 @@ def print_simple_status(manager, status):
 
 
 def print_timed_status(manager, status, duration_fn):
-    total_duration = 0
+    durations = []
     tasks = safe_get_tasks_by_status(manager, status)
     print status.upper()
     for task in tasks:
         duration = duration_fn(task)
-        total_duration += duration
         pretty_duration = get_pretty_duration(duration)
         print " - %s (%s)" % (task.name, pretty_duration)
+        durations.append(duration)
+
+    total_duration = sum(durations, datetime.timedelta())
 
     return total_duration
 
 
 def info(manager):
     duration_fn = task.Task.get_duration
-    total_duration = 0
+    durations = []
 
-    print_simple_status(manager, "started")
+    duration = print_timed_status(manager, "started", duration_fn)
+    durations.append(duration)
     print
 
-    total_duration = print_timed_status(manager, "stopped", duration_fn)
+    duration = print_timed_status(manager, "stopped", duration_fn)
+    durations.append(duration)
     print
 
     print_simple_status(manager, "pending")
     print
 
-    total_duration += print_timed_status(manager, "done", duration_fn)
+    duration = print_timed_status(manager, "done", duration_fn)
+    durations.append(duration)
     print
 
+    total_duration = sum(durations, datetime.timedelta())
     print "Total Duration: %s" % get_pretty_duration(total_duration)
 
 
@@ -90,15 +108,27 @@ def delete(manager, task_id):
     manager.delete_task(task)
 
 
-def report(manager):
-    total_duration = 0
-    date = datetime.date(2011, 1, 9)
-    duration_fn = lambda t: task.Task.get_duration_for_date(t, date)
+def report(manager, date_str):
+    if date_str == "today":
+        date = utils.get_now().date()
+    elif date_str == "yesterday":
+        date = utils.get_now().date()
+        date = date - datetime.timedelta(days=1)
+
+    print date
+    print
+    durations = []
     status = "started"
     tasks = manager.get_tasks_with_status_on_date(status, date)
     for task in tasks:
-        total_duration += print_timed_status(manager, task.status, duration_fn)
-        print task
+        duration = task.get_duration_for_date(date)
+        durations.append(duration)
+        pretty_duration = get_pretty_duration(duration)
+        print " - %s (%s)" % (task.name, pretty_duration)
+
+    print
+    total_duration = sum(durations, datetime.timedelta())
+    print "Total Duration: %s" % get_pretty_duration(total_duration)
 
 
 def edit(manager, task_id):
@@ -166,7 +196,8 @@ def main():
         task_id = sys.argv[2]
         delete(manager)
     elif action == "report":
-        report(manager)
+        date_str = sys.argv[2]
+        report(manager, date_str)
     elif action == "edit":
         task_id = sys.argv[2]
         edit(manager, task_id)

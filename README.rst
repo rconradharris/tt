@@ -2,6 +2,7 @@
 tt - the stupid timetracker
 ===========================
 
+
 Introduction
 ============
 
@@ -11,9 +12,10 @@ Introduction
     * Uses bash completion to make task switching quick and painless
     * Provides simple reports to see where your time was spent
 
-As a bonus, since everything is stored in plain text-files, `tt` plays well with
-`git`, meaning you can get backup (via `git push remote`) and change-tracking (via
-`git diff`) for free.
+As a bonus, since everything is stored in plain text-files, `tt` plays well
+with `git`, meaning you can get backup (via `git push remote`) and
+change-tracking (via `git diff`) for free.
+
 
 Installation
 ============
@@ -26,6 +28,7 @@ Run::
 Add the following line to your .bashrc or .profile::
 
     . /etc/tt_bash_completion_hook
+
 
 Usage
 =====
@@ -93,4 +96,12 @@ Close finished tasks::
 
         Total Duration: 0 seconds
 
+Report for today::
 
+    $ tt report today
+    2011-01-11
+
+     - Create the Report Component (01:30:00)
+     - Add some Tests for Duration (00:45:00)
+
+     Total Duration: 02:15:00

@@ -2,7 +2,9 @@
 Design Notes
 ============
 
+
 The design is modeled on git, a database within the filesystem.
+
 
 Task IDs
 ========
@@ -13,6 +15,7 @@ system: the task name (slugified and truncated) and the task creation date.
 Since `tt` provides tab-completion on task_ids, you rarely have to type out
 the entire ID. Rather, you type in the first two-letters of the task name
 (lowercased) then press TAB, the rest of the id should fill in automatically.
+
 
 Task File
 =========
@@ -25,6 +28,7 @@ Since this is just a plain text file, you are free to edit this as needed. The
 only caveat is: ensure the state changes make-sense (e.g. don't start a closed
 task, etc.)
 
+
 Task Status
 ===========
 
@@ -33,6 +37,7 @@ A task is given a particular status by placing a pointer-file in the
 task_id, is the only part that is needed.
 
 This could be a symlink (?).
+
 
 Task Manager
 ============

@@ -1,30 +1,154 @@
 import datetime
 import unittest
 
-import tt
+from tt import exceptions
+from tt import task
+from tt import task_manager
+from tt import utils
+
 
 class TaskTest(unittest.TestCase):
     def setUp(self):
-        now = datetime.datetime(2011, 1, 7, 18, 53, 45, 796977)
-        tt.get_now = lambda: now
+        now = datetime.datetime(2011, 1, 7, 18, 53, 45, 0)
+        utils.get_now = lambda: now
 
-        self.manager = tt.TaskManager()
-        self.task = tt.Task.create(
+        self.manager = task_manager.TaskManager()
+        self.task = task.Task.create(
             manager=self.manager,
-            name="Develop tt sooner rather than later", status="pending",
-            priority="high")
+            name="Develop tt sooner rather than later", status="pending")
 
     def test_generate_task_id(self):
         self.assertEqual(self.task.task_id, "develop_tt_soone-2011_01_07")
 
     def test_get_task_id_parts(self):
-        task_id_parts = self.task._get_task_id_parts()
+        task_id_parts = self.task._get_task_id_parts(self.task.task_id)
         self.assertEqual(task_id_parts,
                          ("develop_tt_soone", "2011", "01", "07"))
 
-    def test_get_task_dir(self):
-        task_dir = self.task._get_task_dir()
-        print task_dir
+
+class BaseDurationTest(unittest.TestCase):
+    def setUp(self):
+        self.manager = task_manager.TaskManager()
+        self.task = task.Task.create(
+            manager=self.manager,
+            name="Develop tt sooner rather than later", status="pending")
+
+        now = datetime.datetime(2011, 1, 7, 2, 0, 0, 0)  # 2:00
+        utils.get_now = lambda: now
+
+
+class GetDurationTest(BaseDurationTest):
+    """Tests for Task.get_duration"""
+
+    def make_log_entry(self, status, hhmmss):
+        """Creates a timelog entry when given the status and time in HH:MM:SS
+        format
+        """
+        hh, mm, ss = hhmmss.split(':')
+        dt = datetime.datetime(2011, 1, 7, int(hh), int(mm), int(ss), 0)
+        return (status, dt)
+
+    def test_bounded_interval(self):
+        entry = self.make_log_entry
+
+        self.task.log = [
+            entry('pending', '01:00:00'),
+            entry('started', '01:10:00'),
+            entry('stopped', '01:10:06')
+        ]
+
+        duration = self.task.get_duration()
+        self.assertEqual(duration.seconds, 6)
+
+    def test_two_bounded_intervals(self):
+        entry = self.make_log_entry
+
+        self.task.log = [
+            entry('pending', '01:00:00'),
+            entry('started', '01:10:00'),
+            entry('stopped', '01:10:06'),
+            entry('started', '01:10:10'),
+            entry('stopped', '01:10:17')
+        ]
+
+        duration = self.task.get_duration()
+        self.assertEqual(duration.seconds, 13)
+
+    def test_unbounded_interval(self):
+        entry = self.make_log_entry
+
+        self.task.log = [
+            entry('pending', '01:00:00'),
+            entry('started', '01:10:00'),
+        ]
+
+        # 2:00 - 1:10 = 50 min = 3000 seconds
+        duration = self.task.get_duration()
+        self.assertEqual(duration.seconds, 3000)
+
+    def test_invalid_interval1(self):
+        """started with no stopped, started not last entry"""
+        entry = self.make_log_entry
+
+        self.task.log = [
+            entry('pending', '01:00:00'),
+            entry('started', '01:10:00'),
+            entry('closed',  '01:11:00'),
+        ]
+
+        self.assertRaises(exceptions.StatusChangeException,
+                          self.task.get_duration)
+
+    def test_invalid_interval2(self):
+        """'started' followed by a 'started'"""
+        entry = self.make_log_entry
+
+        self.task.log = [
+            entry('pending', '01:00:00'),
+            entry('started', '01:10:00'),
+            entry('started', '01:11:00'),
+        ]
+
+        self.assertRaises(exceptions.StatusChangeException,
+                          self.task.get_duration)
+
+
+class GetDurationForDateTest(BaseDurationTest):
+    """Tests for Task.get_duration_for_date"""
+
+    def make_log_entry(self, status, datetime_str):
+        """Creates a timelog entry when given the status and time in HH:MM:SS
+        format
+        """
+        dt = utils.get_datetime_from_str(datetime_str)
+        return status, dt
+
+    def test_only_started_on_date(self):
+        entry = self.make_log_entry
+        self.task.log = [
+            entry('pending', '2011-01-7 01:00:00'),
+            entry('started', '2011-01-7 01:10:00'),
+            entry('stopped', '2011-01-7 01:11:00'),
+            entry('started', '2011-01-8 01:10:00'),
+            entry('stopped', '2011-01-8 01:12:00')
+        ]
+
+        date = datetime.date(2011, 1, 7)
+        duration = self.task.get_duration_for_date(date)
+        self.assertEqual(duration.seconds, 60)
+
+
+    def test_crosses_midnight(self):
+        entry = self.make_log_entry
+        self.task.log = [
+            entry('pending', '2011-01-7 01:00:00'),
+            entry('started', '2011-01-7 23:59:10'),
+            entry('stopped', '2011-01-8 00:01:00')
+        ]
+
+        date = datetime.date(2011, 1, 7)
+        duration = self.task.get_duration_for_date(date)
+        self.assertEqual(duration.seconds, 50)
 
 if __name__ == "__main__":
     unittest.main()

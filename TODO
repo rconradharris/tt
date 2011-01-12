@@ -1,4 +1,6 @@
-* Add report() which shows time-spent on tasks on a given day
+* tt info --today (just show stuff for today)
+
+* Add weekly report
 
 * Improve bash completion, use bash_completion.d where available, otherwise
   fall back to manual addition
@@ -10,7 +12,8 @@
     Commit on status change?
     git-init on tt init?
 
-* Flag tasks > 8 hours and cross midnight as "suspicious", allow user to "verify"
+* Flag tasks > 8 hours and cross midnight as "suspicious", allow user to
+* "verify"
 
 * Delete closed tasks older than a given date
 
@@ -22,3 +25,5 @@
 
 * Add command to rebuild `tasks/state/status` directory (helpful if you hand
   edit files)
+
+* Run Pep-8 on code, add pep8 git hook

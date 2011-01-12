@@ -1,10 +1,10 @@
 import unittest
 
-import tt
+from tt import task_manager
 
 class TaskManagerTest(unittest.TestCase):
     def setUp(self):
-        self.task_manager = tt.TaskManager()
+        self.task_manager = task_manager.TaskManager()
         #self.task_manager.initialize_state()
 
     def tearDown(self):

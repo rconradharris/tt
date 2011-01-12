@@ -97,13 +97,12 @@ class TaskManager(object):
 
         Since this scans all tasks, this is very expensive.
         """
-        date_match = lambda dt: ((dt.year == date.year) and (dt.month == date.month) and
-                                 (dt.day == date.day))
         tasks = self.get_all_tasks()
         for task in tasks:
-            for log_status, dt in task.log:
-                if log_status == status and date_match(dt):
-                    yield task
+            entries = task.get_log_entries_for_date(date)
+            statuses = [s for s, _ in entries]
+            if status in statuses:
+                yield task
 
     def _create_tt_dir(self):
         """
