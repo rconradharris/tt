@@ -8,6 +8,11 @@ _tt()
     tt_completer="_tt_completer"
     if [[ ${cur} == ?* ]] ; then
         case "${prev}" in
+            report)
+                local reports="`${tt_completer} reports`"
+                COMPREPLY=( $(compgen -W "${reports}" -- ${cur}) )
+                return 0
+                ;;
             start)
                 local stopped_task_ids="`${tt_completer} task_ids pending stopped`"
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
@@ -19,6 +24,11 @@ _tt()
                 return 0
                 ;;
             edit)
+                local stopped_task_ids="`${tt_completer} task_ids pending started stopped done`"
+                COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
+                return 0
+                ;;
+            rm)
                 local stopped_task_ids="`${tt_completer} task_ids pending started stopped done`"
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
                 return 0

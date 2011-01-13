@@ -135,20 +135,38 @@ class GetDurationForDateTest(BaseDurationTest):
 
         date = datetime.date(2011, 1, 7)
         duration = self.task.get_duration_for_date(date)
-        self.assertEqual(duration.seconds, 60)
+
+        msg = "(2011-01-7 01:11:00 - 2011-01-7 01:10:00) = 60 seconds"
+        self.assertEqual(duration.seconds, 60, msg)
 
 
     def test_crosses_midnight(self):
         entry = self.make_log_entry
         self.task.log = [
+            entry('pending', '2011-01-5 01:00:00'),
+            entry('started', '2011-01-5 23:59:10'),
+            entry('stopped', '2011-01-6 00:01:00')
+        ]
+
+        date = datetime.date(2011, 1, 5)
+        duration = self.task.get_duration_for_date(date)
+
+        msg = "(2011-01-6 00:00:00 - 2011-01-5 23:59:10) = 50 seconds"
+        self.assertEqual(duration.seconds, 50, msg)
+
+    def test_unbounded(self):
+        entry = self.make_log_entry
+        self.task.log = [
             entry('pending', '2011-01-7 01:00:00'),
-            entry('started', '2011-01-7 23:59:10'),
-            entry('stopped', '2011-01-8 00:01:00')
+            entry('started', '2011-01-7 01:59:30')
         ]
 
         date = datetime.date(2011, 1, 7)
         duration = self.task.get_duration_for_date(date)
-        self.assertEqual(duration.seconds, 50)
+
+        msg = "(2011-01-7 02:00:00 - 2011-01-07 01:59:30) = 30 seconds"
+        self.assertEqual(duration.seconds, 30, msg)
+
 
 if __name__ == "__main__":
     unittest.main()

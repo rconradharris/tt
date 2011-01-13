@@ -20,8 +20,13 @@ if action == "task_ids":
         for task_id in task_ids:
             print task_id
 elif action == "actions":
-    actions = ('add', 'start', 'close', 'edit', 'delete', 'stop', 'done', 'info')
+    actions = ('add', 'start', 'close', 'edit', 'rm', 'stop', 'done',
+               'ls', 'report')
     for action in actions:
         print action
+elif action == "reports":
+    reports = ('today', 'yesterday', 'week')
+    for report in reports:
+        print report
 
 

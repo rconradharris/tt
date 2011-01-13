@@ -1,5 +1,3 @@
-* tt info --today (just show stuff for today)
-
 * Improve bash completion, use bash_completion.d where available, otherwise
   fall back to manual addition
 
@@ -13,7 +11,7 @@
 * Flag tasks > 8 hours and cross midnight as "suspicious", allow user to
 * "verify"
 
-* Delete closed tasks older than a given date
+* Delete closed tasks older than a given date (archive if using git)
 
 * Add colorization
 
@@ -21,9 +19,16 @@
 
 * Move _tt_completer into tt itself
 
-* Add command to rebuild `tasks/state/status` directory (helpful if you hand
-  edit files)
+* Add command to rebuild `tasks/state/status` directory.
+  This should be run automatically after editing a file.
+  This should also find orphaned tasks. Tasks not linked from status dir
+  should be 'closed'. tt fsck?
 
 * Run Pep-8 on code, add pep8 git hook
 
-* Add tab completion for reports
+* Create fixtures
+
+* Multi-project tt. If current directory has a .tt dir, then tt will use that,
+  otherwise it will look for .tt in your home directory. This means you can
+  separate tasks per project.
+

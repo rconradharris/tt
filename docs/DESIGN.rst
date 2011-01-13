@@ -49,22 +49,23 @@ given status, or tasks that were started on a particular date.
 Filesystem Layout
 =================
 
-.tt/
-  state/
-    status/
-      pending/
-        design_session_2011_1_08
-      started/
-      stopped/
-      done/
-  tasks/
-    2011/
-      01/
-        08/
-          design_session
-            Design Session
-            pending <timestamp>
-            started <timestamp>
-            stopped <timestamp>
-            done <timestamp>
-            closed <timestamp>
+Layout::
+    .tt/
+      state/
+        status/
+          pending/
+            design_session-2011_1_08
+          started/
+          stopped/
+          done/
+      tasks/
+        2011/
+          01/
+            08/
+              design_session
+                Design Session
+                pending <timestamp>
+                started <timestamp>
+                stopped <timestamp>
+                done <timestamp>
+                closed <timestamp>

@@ -194,7 +194,7 @@ class Task(object):
         os.unlink(task_status_file)
 
     def _remove_task_file(self):
-        task_file = self._get_task_file()
+        task_file = self.get_task_file()
         os.unlink(task_file)
 
     def start(self):
@@ -293,15 +293,27 @@ class Task(object):
                 yield entry
 
     def get_duration_for_date(self, date):
-        """Return the task duration in seconds for a given date.
+        """Return the task duration for a given date.
 
-        For tasks that cross midnight, we only include the duration up to
-        midnight on the given date. The rest of the duration will be tabulated
-        in the following date.
+        1. If we're asked for today, we should calculate the time up to this
+           moment (now).
+
+        2. If we're asked for a date in the past, we should use midnight as
+           the boundary.
         """
-        dt = utils.date2datetime(date)
-        boundary = dt + datetime.timedelta(days=1)
         entries = self.get_log_entries_for_date(date)
+        now = utils.get_now()
+        today = utils.date_match(now, date)
+
+        if today:
+            # 1. today
+            boundary = now
+        else:
+            # 2. past
+            dt = utils.date2datetime(date)
+            midnight = dt + datetime.timedelta(days=1)
+            boundary = midnight
+
         duration = self._get_duration(entries, boundary)
         return duration
 

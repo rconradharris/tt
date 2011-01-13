@@ -43,7 +43,7 @@ Add a task::
 
 Show current status::
 
-    $ tt info
+    $ tt ls
     STARTED
 
     STOPPED
@@ -68,7 +68,7 @@ Finish a task::
 
     $ tt done cr[TAB-complete]eate_readme_fi-2011_01_09
 
-    $ tt info
+    $ tt ls
     STARTED
 
     STOPPED
@@ -85,7 +85,7 @@ Close finished tasks::
 
     $ tt close
 
-    $ tt info
+    $ tt ls
     STARTED
 
     STOPPED
@@ -95,6 +95,10 @@ Close finished tasks::
     DONE
 
     Total Duration: 00:00:00
+
+Delete a task::
+
+    $ tt rm cr[TAB-complete]eate_readme_fi-2011_01_09
 
 Report for today::
 
@@ -115,3 +119,7 @@ Report for week::
     2011-01-07: 00:00:00
     2011-01-06: 00:00:00
     2011-01-05: 00:00:00
+
+Bulk load tasks::
+
+    $ tt add < daily.txt

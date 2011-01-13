@@ -13,12 +13,34 @@ def init(manager):
     manager.initialize_state()
 
 
-def add(manager, name_parts):
-    name = ' '.join(name_parts)
-    try:
-        manager.add_task(name)
-    except exceptions.TTException, e:
-        die(e)
+def add(manager, argv):
+    """Add tasks to tt
+
+    Tasks can be added two ways:
+
+    1. Directly on the command-line as part of the arguments list, e.g.
+            tt add This is a task
+
+    2. As list of tasks read from stdin, e.g.
+            tt add < bunch_of_tasks.txt
+    """
+    if len(argv) > 2:
+        # 1. arg list
+        name = ' '.join(argv[2:])
+        names = [name]
+    else:
+        # 2. stdin
+        lines = sys.stdin.readlines()
+        names = [l.strip() for l in lines if l.strip()]
+
+    if not names:
+        die("Nothing to add.")
+
+    for name in names:
+        try:
+            manager.add_task(name)
+        except exceptions.TTException, e:
+            die(e)
 
 
 def get_pretty_duration(duration):
@@ -60,27 +82,14 @@ def print_timed_status(manager, status, duration_fn):
     return total_duration
 
 
-def info(manager):
+def ls(manager):
     duration_fn = task.Task.get_duration
-    durations = []
-
-    duration = print_timed_status(manager, "started", duration_fn)
-    durations.append(duration)
-    print
-
-    duration = print_timed_status(manager, "stopped", duration_fn)
-    durations.append(duration)
-    print
-
-    print_simple_status(manager, "pending")
-    print
-
-    duration = print_timed_status(manager, "done", duration_fn)
-    durations.append(duration)
-    print
-
-    total_duration = sum(durations, datetime.timedelta())
-    print "Total Duration: %s" % get_pretty_duration(total_duration)
+    for status in ("started", "stopped", "pending", "done"):
+        if status == "pending":
+            print_simple_status(manager, status)
+        else:
+            print_timed_status(manager, status, duration_fn)
+        print
 
 
 def start(manager, task_id):
@@ -103,7 +112,7 @@ def close(manager):
     manager.close_done_tasks()
 
 
-def delete(manager, task_id):
+def rm(manager, task_id):
     task = safe_get_task(manager, task_id)
     manager.delete_task(task)
 
@@ -190,7 +199,7 @@ def die(msg):
 
 def usage():
     cmd = "tt"
-    print "%s <init|add|start|close|done|edit|stop|info>" % cmd
+    print "%s <init|add|start|close|done|edit|stop|ls>" % cmd
 
 
 def main():
@@ -207,10 +216,9 @@ def main():
     if action == "init":
         init(manager)
     elif action == "add":
-        name_parts = sys.argv[2:]
-        add(manager, name_parts)
-    elif action == "info":
-        info(manager)
+        add(manager, sys.argv)
+    elif action == "ls":
+        ls(manager)
     elif action == "start":
         task_id = sys.argv[2]
         start(manager, task_id)
@@ -222,9 +230,9 @@ def main():
         done(manager, task_id)
     elif action == "close":
         close(manager)
-    elif action == "delete":
+    elif action == "rm":
         task_id = sys.argv[2]
-        delete(manager)
+        rm(manager, task_id)
     elif action == "report":
         date_str = sys.argv[2]
         report(manager, date_str)
