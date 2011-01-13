@@ -207,10 +207,8 @@ def main():
         usage()
         sys.exit(1)
 
-    #TODO: make this configurable
-    TT_DIR = "~/.tt"
-    task_manager.TaskManager.TT_DIR = TT_DIR
-    manager = task_manager.TaskManager()
+    tt_dir = "~/.tt"
+    manager = task_manager.TaskManager(tt_dir)
 
     action = sys.argv[1]
     if action == "init":

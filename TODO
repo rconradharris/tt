@@ -1,3 +1,7 @@
+* Multi-project tt. If current directory has a .tt dir, then tt will use that,
+  otherwise it will look for .tt in your home directory. This means you can
+  separate tasks per project.
+
 * Improve bash completion, use bash_completion.d where available, otherwise
   fall back to manual addition
 
@@ -8,27 +12,22 @@
     Commit on status change?
     git-init on tt init?
 
-* Flag tasks > 8 hours and cross midnight as "suspicious", allow user to
-* "verify"
-
-* Delete closed tasks older than a given date (archive if using git)
-
-* Add colorization
-
-* Add man page
-
-* Move _tt_completer into tt itself
-
 * Add command to rebuild `tasks/state/status` directory.
   This should be run automatically after editing a file.
   This should also find orphaned tasks. Tasks not linked from status dir
   should be 'closed'. tt fsck?
 
+* Move _tt_completer into tt itself
+
+* Add man page
+
+* Flag tasks > 8 hours and cross midnight as "suspicious", allow user to
+* "verify"
+
+* Add colorization
+
 * Run Pep-8 on code, add pep8 git hook
 
+* Delete closed tasks older than a given date (archive if using git)
+
 * Create fixtures
-
-* Multi-project tt. If current directory has a .tt dir, then tt will use that,
-  otherwise it will look for .tt in your home directory. This means you can
-  separate tasks per project.
-

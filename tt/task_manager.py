@@ -5,8 +5,9 @@ from tt import exceptions
 from tt.task import Task
 
 class TaskManager(object):
-    TT_DIR = "/tmp/ttdata"
 
+    def __init__(self, tt_dir):
+        self.tt_dir = os.path.expanduser(tt_dir)
 
     def get_task_file(self, task):
         """Returns task file for given task"""
@@ -116,9 +117,7 @@ class TaskManager(object):
             done/
     tasks/
         """
-        tt_dir = self._get_tt_dir()
-
-        os.makedirs(tt_dir)
+        os.makedirs(self.tt_dir)
 
         for status in Task.DIRECTORY_STATUSES:
             status_dir = self._get_status_dir(status)
@@ -127,14 +126,8 @@ class TaskManager(object):
         tasks_dir = self._get_tasks_dir()
         os.makedirs(tasks_dir)
 
-    def _get_tt_dir(self):
-        """Return TT's working directory"""
-        tt_dir = os.path.expanduser(self.TT_DIR)
-        return tt_dir
-
     def _get_state_dir(self):
-        tt_dir = self._get_tt_dir()
-        state_dir = os.path.join(tt_dir, "state")
+        state_dir = os.path.join(self.tt_dir, "state")
         return state_dir
 
     def _get_status_dir(self, status):
@@ -143,6 +136,5 @@ class TaskManager(object):
         return status_dir
 
     def _get_tasks_dir(self):
-        tt_dir = self._get_tt_dir()
-        tasks_dir = os.path.join(tt_dir, "tasks")
+        tasks_dir = os.path.join(self.tt_dir, "tasks")
         return tasks_dir

@@ -7,15 +7,22 @@ from tt import task_manager
 from tt import utils
 
 
-class TaskTest(unittest.TestCase):
-    def setUp(self):
-        now = datetime.datetime(2011, 1, 7, 18, 53, 45, 0)
-        utils.get_now = lambda: now
+class BaseTaskTest(unittest.TestCase):
 
-        self.manager = task_manager.TaskManager()
+    def setUp(self):
+        tt_dir = "fakedir"
+        self.manager = task_manager.TaskManager(tt_dir)
+
         self.task = task.Task.create(
             manager=self.manager,
-            name="Develop tt sooner rather than later", status="pending")
+            name="Develop tt sooner rather than later",
+            status="pending")
+
+        now = datetime.datetime(2011, 1, 7, 2, 0, 0, 0)  # 2:00
+        utils.get_now = lambda: now
+
+
+class TaskTest(BaseTaskTest):
 
     def test_generate_task_id(self):
         self.assertEqual(self.task.task_id, "develop_tt_soone-2011_01_07")
@@ -26,18 +33,7 @@ class TaskTest(unittest.TestCase):
                          ("develop_tt_soone", "2011", "01", "07"))
 
 
-class BaseDurationTest(unittest.TestCase):
-    def setUp(self):
-        self.manager = task_manager.TaskManager()
-        self.task = task.Task.create(
-            manager=self.manager,
-            name="Develop tt sooner rather than later", status="pending")
-
-        now = datetime.datetime(2011, 1, 7, 2, 0, 0, 0)  # 2:00
-        utils.get_now = lambda: now
-
-
-class GetDurationTest(BaseDurationTest):
+class GetDurationTest(BaseTaskTest):
     """Tests for Task.get_duration"""
 
     def make_log_entry(self, status, hhmmss):
@@ -113,7 +109,7 @@ class GetDurationTest(BaseDurationTest):
                           self.task.get_duration)
 
 
-class GetDurationForDateTest(BaseDurationTest):
+class GetDurationForDateTest(BaseTaskTest):
     """Tests for Task.get_duration_for_date"""
 
     def make_log_entry(self, status, datetime_str):

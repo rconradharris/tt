@@ -3,9 +3,8 @@ import sys
 
 from tt import task_manager
 
-TESTDIR = "~/.tt"
-task_manager.TaskManager.TT_DIR = TESTDIR
-manager = task_manager.TaskManager()
+tt_dir = "~/.tt"
+manager = task_manager.TaskManager(tt_dir)
 
 if len(sys.argv) < 2:
     print "_tt_completer <actions|task_ids>"

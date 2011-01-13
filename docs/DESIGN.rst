@@ -69,3 +69,14 @@ Layout::
                 stopped <timestamp>
                 done <timestamp>
                 closed <timestamp>
+
+Multiple Projects
+=================
+
+tt init .
+
+tt init ~/
+
+Find the most specific .tt directory by walking path from cwd up.
+
+
