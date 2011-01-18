@@ -18,11 +18,6 @@ _tt()
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )
                 return 0
                 ;;
-            stop)
-                local started_task_ids="`${tt_completer} task_ids started`"
-                COMPREPLY=( $(compgen -W "${started_task_ids}" -- ${cur}) )
-                return 0
-                ;;
             edit)
                 local stopped_task_ids="`${tt_completer} task_ids pending started stopped done`"
                 COMPREPLY=( $(compgen -W "${stopped_task_ids}" -- ${cur}) )

@@ -60,9 +60,9 @@ Start a task::
 
     $ tt start cr[TAB-complete]eate_readme_fi-2011_01_09
 
-Stop a task::
+Stop the current task::
 
-    $ tt stop cr[TAB-complete]eate_readme_fi-2011_01_09
+    $ tt stop
 
 Finish a task::
 

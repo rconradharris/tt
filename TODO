@@ -1,3 +1,11 @@
+* Fix bug in daily report.  If time crosses midnight, the piece on the next
+  day isn't tabulated (since there isn't a started at message on that day)
+
+* Report on most time consuming tasks
+
+* Add report for context switches, how many occurred, how many by hour, which
+  tasks were most interrupted?
+
 * Multi-project tt. If current directory has a .tt dir, then tt will use that,
   otherwise it will look for .tt in your home directory. This means you can
   separate tasks per project.

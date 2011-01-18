@@ -28,8 +28,12 @@ class TaskManager(object):
 
         task.start()
 
-    def stop_task(self, task):
-        task.stop()
+    def stop_current_task(self):
+        cur_task = self.get_started_task()
+        if not cur_task:
+            raise exceptions.StatusChangeException("No started tasks")
+
+        cur_task.stop()
 
     def delete_task(self, task):
         task.delete()

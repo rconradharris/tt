@@ -98,10 +98,11 @@ def start(manager, task_id):
     manager.start_task(task)
 
 
-def stop(manager, task_id):
-    task = safe_get_task(manager, task_id)
-    manager.stop_task(task)
-
+def stop(manager):
+    try:
+        manager.stop_current_task()
+    except exceptions.TTException, e:
+        die(e)
 
 def done(manager, task_id):
     task = safe_get_task(manager, task_id)
@@ -221,8 +222,7 @@ def main():
         task_id = sys.argv[2]
         start(manager, task_id)
     elif action == "stop":
-        task_id = sys.argv[2]
-        stop(manager, task_id)
+        stop(manager)
     elif action == "done":
         task_id = sys.argv[2]
         done(manager, task_id)
