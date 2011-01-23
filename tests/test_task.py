@@ -144,11 +144,16 @@ class GetDurationForDateTest(BaseTaskTest):
             entry('stopped', '2011-01-6 00:01:00')
         ]
 
+        # Day 1
         date = datetime.date(2011, 1, 5)
         duration = self.task.get_duration_for_date(date)
-
-        msg = "(2011-01-6 00:00:00 - 2011-01-5 23:59:10) = 50 seconds"
+        msg = "(2011-01-5 23:59:10 - 2011-01-6 00:00:00) = 50 seconds"
         self.assertEqual(duration.seconds, 50, msg)
+
+        date = datetime.date(2011, 1, 6)
+        duration = self.task.get_duration_for_date(date)
+        msg = "(2011-01-6 00:00:00 - 2011-01-6 00:01:00) = 60 seconds"
+        self.assertEqual(duration.seconds, 60, msg)
 
     def test_unbounded(self):
         entry = self.make_log_entry

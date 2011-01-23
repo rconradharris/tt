@@ -109,6 +109,18 @@ class TaskManager(object):
             if status in statuses:
                 yield task
 
+    def get_tasks_worked_on_date(self, date):
+        """Tasks were 'worked' on a date if they were either started or
+        stopped on that date
+        """
+        tasks = self.get_all_tasks()
+        for task in tasks:
+            entries = task.get_log_entries_for_date(date)
+            for status, dt in entries:
+                if status in ('started', 'stopped'):
+                    yield task
+                    break
+
     def _create_tt_dir(self):
         """
 .tt/

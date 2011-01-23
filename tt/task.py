@@ -250,9 +250,14 @@ class Task(object):
            'stopped' status. The duration of the interval is
            (stop_time - start_time).
 
-        2. An 'unbounded interval' is where the 'started' status is the last
-           entry in the log. In this case, the duration of the interval is
-           (now - start_time).
+        2. An 'unbounded interval' has 2 possibilities:
+
+            a. Where the 'started' status is the last entry in the log. In
+               this case, the duration of the interval is (now - start_time)
+
+            b. Where the 'stopped' status is the first entry in the log for
+               that date. In this case, the duration of the interval is
+               (stopped_time - midnight)
 
         3. An 'invalid interval' is one where the 'started' status does not
            have a matching 'stopped' status *and* 'started' is not the last
@@ -272,6 +277,12 @@ class Task(object):
                 # (2.6)
                 intervals.append(timedelta)
                 started = None
+            elif not started and status == "stopped":
+                # 2b. unbounded interval - unclosed stop
+                stopped = dt
+                midnight = utils.date2datetime(stopped.date())
+                timedelta = stopped - midnight
+                intervals.append(timedelta)
             elif started:
                 # 3. invalid interval
                 raise exceptions.StatusChangeException(
@@ -279,7 +290,7 @@ class Task(object):
                     "the last entry in the log")
 
         if started:
-            # 2. unbounded interval
+            # 2a. unbounded interval - unclosed start
             timedelta = boundary - started
             intervals.append(timedelta)
 

@@ -142,9 +142,7 @@ def weekly_report(manager, days_back=7):
         dates.append(date)
 
     for date in dates:
-        status = "started"
-        tasks = manager.get_tasks_with_status_on_date(status, date)
-
+        tasks = manager.get_tasks_worked_on_date(date)
         durations = []
         for task in tasks:
             duration = task.get_duration_for_date(date)
@@ -158,8 +156,7 @@ def weekly_report(manager, days_back=7):
 def daily_report(manager, date):
     print date
     durations = []
-    status = "started"
-    tasks = manager.get_tasks_with_status_on_date(status, date)
+    tasks = manager.get_tasks_worked_on_date(date)
     for task in tasks:
         duration = task.get_duration_for_date(date)
         durations.append(duration)
