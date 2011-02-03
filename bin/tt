@@ -47,13 +47,11 @@ def get_pretty_duration(duration):
     """Return a human readable form of total duration"""
     #TODO: write code to go from secs -> min -> hours -> days -> weeks
     # -> months -> years
-    # NOTE: For now, assume < 1 day
-    assert duration.days == 0
     seconds = float(duration.seconds)
     minutes = seconds / 60
     seconds %= 60
 
-    hours = minutes / 60
+    hours = (minutes / 60) + (duration.days * 24)
     minutes %= 60
 
     duration_str = "%02d:%02d:%02d" % (hours, minutes, seconds)
